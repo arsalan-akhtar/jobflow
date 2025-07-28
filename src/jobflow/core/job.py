@@ -667,7 +667,18 @@ class Job(MSONable):
             hosts=self.hosts,
             name=self.name,
         )
-        store.update(data, key=["uuid", "index"], save=save)
+        try:
+           # Pydantic v2
+           data_for_store = data.model_dump()
+           print("DEBUG Pydantic v2")
+           store.update(data_for_store, key=["uuid", "index"])
+        except AttributeError:
+           # Pydantic v1
+           print("DEBUG Pydantic v1")
+           data_for_store = data.dict()
+           store.update(data_for_store, key=["uuid", "index"], save=save)
+        
+
 
         CURRENT_JOB.reset()
         logger.info(f"Finished job - {self.name} ({self.uuid}{index_str})")
